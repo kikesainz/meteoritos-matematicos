@@ -7,7 +7,7 @@ meteoritos antes de que caigan sobre la ciudad.
 
 - Elige qué quieres practicar: sumas, restas, multiplicaciones, divisiones o mezclar varias.
 - Escribe el resultado y pulsa Enter. Si aciertas, haz clic en un meteorito para destruirlo.
-- Se juega en ordenador (hace falta teclado).
+- Se juega en ordenador, tableta o móvil (con el móvil en horizontal). Hay un teclado numérico en pantalla.
 
 ¿Lo has probado? Me encantaría saber tu opinión.
 
