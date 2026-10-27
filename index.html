@@ -92,7 +92,53 @@ body {
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
-
+<script>
+// iPad/iPhone (Safari): el sonido se desbloquea con el primer toque y no
+// depende del modo silencio. En Android y ordenador no cambia nada.
+(function () {
+  var contexts = [];
+  window.__meteoAudioContexts = contexts;
+  var Original = window.AudioContext || window.webkitAudioContext;
+  if (Original) {
+    var Tracked = function (options) {
+      var ctx = options === undefined ? new Original() : new Original(options);
+      contexts.push(ctx);
+      return ctx;
+    };
+    Tracked.prototype = Original.prototype;
+    window.AudioContext = Tracked;
+    if (window.webkitAudioContext) { window.webkitAudioContext = Tracked; }
+  }
+  function setPlayback() {
+    try { if (navigator.audioSession) { navigator.audioSession.type = 'playback'; } } catch (e) {}
+  }
+  function resumeAll() {
+    contexts.forEach(function (ctx) {
+      if (ctx.state !== 'running' && ctx.state !== 'closed') { ctx.resume().catch(function () {}); }
+    });
+  }
+  var silent = null;
+  function unlock() {
+    setPlayback();
+    if (!silent) {
+      silent = document.createElement('audio');
+      silent.setAttribute('playsinline', '');
+      silent.setAttribute('x-webkit-airplay', 'deny');
+      silent.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+    }
+    var played = silent.play();
+    if (played && played.catch) { played.catch(function () {}); }
+    resumeAll();
+  }
+  setPlayback();
+  ['touchend', 'pointerup', 'click', 'keydown'].forEach(function (type) {
+    document.addEventListener(type, unlock, true);
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) { resumeAll(); }
+  });
+})();
+</script>
 	</head>
 	<body>
 		<canvas id="canvas">
